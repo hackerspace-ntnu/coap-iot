@@ -1,21 +1,25 @@
-.btn{
-	padding: 100px 100px;
+.col-xs-6 > .btn-lg {
+	padding: 75px 0px;
+	font-size: 45px;
     border: 0 none;
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
 }
-
+.col-xs-6 {
+	padding: 10px;
+}
 .jumbotron {
   background-image:url('http://goo.gl/dwIaoU');
-  height: 400px;
+  height: 500px;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-position: center;
+  background-size: contain;
 }
 .led-buttons h1 {
   color: #00b0ff;
   text-align: center;
-  font-size: 48px;  
+  font-size: 75px;  
   font-family: 'Shift', sans-serif;
   font-weight: bold;
 }
