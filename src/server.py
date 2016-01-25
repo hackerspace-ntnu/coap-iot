@@ -9,7 +9,6 @@ import aiocoap
 app = flask.Flask(__name__,static_folder="../static",static_url_path="/static",template_folder="../templates")
 @app.route("/")
 
-
 class Nordicnode():
     def __init__(self, led="0,0,0,0", active=False, address=None, lastactive=0, name=None):
         self.lock = threading.Lock()
@@ -55,6 +54,13 @@ for i in enumerate(range(1,20)):
 
 def hello():
     return flask.render_template("index.html", name="index")
+
+def index():
+    return flask.render_template("index.html", name="index")
+
+@app.route("/<int:id>/<command>")
+def parseCommand(id, command):
+    return "ID: %i, command: %s" % (id, command)
 
 class LedResource(resource.Resource):
     def __init__(self,kit):
