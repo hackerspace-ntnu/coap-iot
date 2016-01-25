@@ -43,7 +43,7 @@ def main():
     root = resource.Site()
     root.add_resource(('block',),BlockResource())
     
-    websrv = threading.Thread(target=(lambda: app.run(debug=True, port=25565, use_reloader=False)), name="Flask-server")
+    websrv = threading.Thread(target=(lambda: app.run(debug=True, port=80, use_reloader=False, host="::")), name="Flask-server")
     websrv.start()
     
     asyncio.async(aiocoap.Context.create_server_context(root))

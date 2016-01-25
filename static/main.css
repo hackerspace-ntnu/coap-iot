@@ -6,6 +6,9 @@
     letter-spacing: 1px;
     text-transform: uppercase;
 }
+
+
+
 .col-xs-6 {
 	padding: 10px;
 }
@@ -17,7 +20,7 @@
   background-size: contain;
 }
 .led-buttons h1 {
-  color: #00b0ff;
+  color: #fff;
   text-align: center;
   font-size: 75px;  
   font-family: 'Shift', sans-serif;
