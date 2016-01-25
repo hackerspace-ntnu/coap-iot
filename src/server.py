@@ -8,8 +8,12 @@ import aiocoap
 
 app = flask.Flask(__name__,static_folder="../static",static_url_path="/static",template_folder="../templates")
 @app.route("/")
-def hello():
+def index():
     return flask.render_template("index.html", name="index")
+
+@app.route("/<int:id>/<command>")
+def parseCommand(id, command):
+    pass
 
 class BlockResource(resource.Resource):
     """
