@@ -13,7 +13,7 @@ def index():
 
 @app.route("/<int:id>/<command>")
 def parseCommand(id, command):
-    pass
+    return "ID: %i, command: %s" % (id, command)
 
 class BlockResource(resource.Resource):
     """
