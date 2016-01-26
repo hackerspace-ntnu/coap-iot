@@ -10,6 +10,9 @@ from SECRET import SECRET_KEY
 
 from flask_socketio import SocketIO, join_room
 
+app = flask.Flask(__name__,static_folder="../static",static_url_path="/static",template_folder="../templates")
+app.config['SECRET_KEY'] = SECRET_KEY
+socketio = SocketIO(app)
 
 class Nordicnode():
     def __init__(self, led="0,0,0,0", active=False, address=None, lastactive=0, name=None):
@@ -25,6 +28,7 @@ class Nordicnode():
         try:
             logging.debug('Acquired a lock')
             self.led = led
+            socketio.emit('newboard',{'data':led})
         finally:
             logging.debug('Released a lock')
             self.lock.release()
@@ -53,10 +57,6 @@ class Nordicnode():
 DEVICES = {}
 for i in enumerate(range(1,20)):
     DEVICES[str(i).zfill(2)] = (Nordicnode(name=str(i).zfill(2)))
-
-app = flask.Flask(__name__,static_folder="../static",static_url_path="/static",template_folder="../templates")
-app.config['SECRET_KEY'] = SECRET_KEY
-socketio = SocketIO(app)
 
 @app.route("/")
 def index():
