@@ -43,16 +43,16 @@
     
             <div class="row">
                 <div class="col-xs-6" >
-					<input class="btn btn-default btn-lg btn-block btn-danger" type="button" value="LED1" id=0>
+					<input class="btn btn-default btn-lg btn-block " type="button" value="LED1" id=0>
 				</div>
 				<div class="col-xs-6">
-					<input class="btn btn-default btn-lg btn-block btn-danger" type="button" value="LED2" id=1>
+					<input class="btn btn-default btn-lg btn-block " type="button" value="LED2" id=1>
 				</div>
                 <div class="col-xs-6">
-					<input class="btn btn-default btn-lg btn-block btn-danger" type="button" value="LED3" id=2>
+					<input class="btn btn-default btn-lg btn-block " type="button" value="LED3" id=2>
 				</div >
 				<div class="col-xs-6">
-					<input class="btn btn-default btn-lg btn-block btn-danger" type="button"  value="LED4" id=3>
+					<input class="btn btn-default btn-lg btn-block " type="button"  value="LED4" id=3>
                   </div>
             
                 </div>
@@ -61,14 +61,13 @@
     <script>
         "use strict"
         
-        var kit_id = "20"
-         
+        var host = document.location.host
+        
+        var kit_id = document.location.pathname.split('/')[1] 
         var toggle_led = function(){
-            var kid = $(this).data('id')
-            console.log(kid)
-            var str = [0]*4
+            var kid = this.id
+            var str = [0,0,0,0]
             str[kid/1] = 1
-            console.log(str)
 			ws.emit('toggleled',{leds:str,id:kit_id})
         }
         
@@ -81,18 +80,22 @@
         var set_button_states = function(states){
             buttons.each(function(index, button){
                 var stet = states[index]/1
-                $(button)
-                    .toggleClass('btn-success',stet)
-                    .toggleClass('btn-danger',!stet)
+                if(stet)
+                {
+                $(button).toggleClass('btn-success',true)
+                $(button).toggleClass('btn-danger',false)
+                }else{
+                $(button).toggleClass('btn-success',false)
+                $(button).toggleClass('btn-danger',true)
+                }
             })
         }
         
-        var ws = io("http://localhost:5000")
+        var ws = io("http://"+host)
         ws.on('connection',function(event){
             ws.emit('requeststate',{id:kit_id})
         })
         ws.on('newboard',function(event){
-            console.log('LALALALALALALALALALALALALALA',event.data)
             set_button_states(event.data)
         })
         

@@ -24,14 +24,16 @@ class Nordicnode():
         self.lastactive = lastactive
         self.name = name
 
-    def updateled(self, led):
+    def updateled(self, red):
         self.lock.acquire()
+        print("updateled called", red)
         try:
             logging.debug('Acquired a lock')
-            for i in range(3):
-                if led[i] == "1":
+            for i in range(4):
+                if int(red[i]) == 1:
+                
                     self.led[i] = (self.led[i]+1)%2
-            self.led = led
+            print(self.led)
             emit('newboard',{'data':self.led})
         finally:
             logging.debug('Released a lock')
@@ -103,6 +105,7 @@ def on_toggle(data):
 @socketio.on('requeststate')
 def on_request_state(data):
     id = data['id']
+    print('WHAT YEAR IS IT',id)
     print('Request received',id,DEVICES[str(id).zfill(2)].getledstatus())
     emit('newboard',{'data':DEVICES[str(id).zfill(2)].getledstatus()})
 
