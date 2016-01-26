@@ -81,7 +81,7 @@ def parseCommand(id):
     
     print("yolo ",flask.g.get("ipidmap",None))
     # End tentative map
-    return flask.render_template("index.html", name="index")
+    return flask.render_template("led.html", name="index")
 
 @socketio.on('connect')
 def on_connect():
@@ -145,7 +145,7 @@ def main():
         root.add_resource((str(kit).zfill(2),'button'), LedResource(str(kit).zfill(2)))
         root.add_resource((str(kit).zfill(2),'i_am_alive'), LastSeenResource(str(kit).zfill(2)))
 
-    websrv = threading.Thread(target=(lambda: socketio.run(app=app, debug=True, port=5000, use_reloader=False)), name="Flask-server")
+    websrv = threading.Thread(target=(lambda: socketio.run(app=app, debug=False, port=80, use_reloader=False)), name="Flask-server")
     websrv.start()
     
     asyncio.async(aiocoap.Context.create_server_context(root))

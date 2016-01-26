@@ -39,37 +39,50 @@
 
     <div class="led-buttons">
         <div class="container">
-            <h1>List of units</h1>
+            <h1>IoT Test Interface</h1>
     
-            <div class="row" id="ButtonContainer">
-                <script type="text/javascript">
-				  
-				  for (var i = 0; i < 20; i++) {
-					var div = document.createElement('DIV')
-					var clickme = document.createElement('A')
-					var btn = document.createElement('BUTTON')
-					var lbl = document.createTextNode('Unit '+(i+1))
-					
-					div.setAttribute('class', 'col-xs-3')
-					btn.setAttribute('class', 'btn btn-default btn-lg btn-block btn-info')
-					
-					
-					if (i < 9) {
-                        clickme.setAttribute('href', ('/0'+(i+1)))
-                    }
-					else {
-						clickme.setAttribute('href', ('/'+(i+1)))
-					}
-					btn.appendChild(lbl)
-					clickme.appendChild(btn)
-					div.appendChild(clickme)
-					document.getElementById('ButtonContainer').appendChild(div)
-				  }
-				  
-				</script>
+            <div class="row">
+                <div class="col-xs-6" >
+					<input class="btn btn-default btn-lg btn-block btn-danger" type="button" value="LED1">
+				</div>
+				<div class="col-xs-6">
+					<input class="btn btn-default btn-lg btn-block btn-danger" type="button" value="LED2">
+				</div>
+                <div class="col-xs-6">
+					<input class="btn btn-default btn-lg btn-block btn-danger" type="button" value="LED3">
+				</div >
+				<div class="col-xs-6">
+					<input class="btn btn-default btn-lg btn-block btn-danger" type="button"  value="LED4">
+                  </div>
             
+                </div>
             </div>
         </div>
-    </div>
+    <script>
+        "use strict"
+        
+        var ws = io("http://localhost:5000")
+        ws.on('connection',function(event){
+            console.log('LFLFLFLDJFSKFJKDFJKDJFKDJFKDJJFKDJFKDJFKDJFKDJFKDJKF',event.status)
+        })
+        ws.on('newboard',function(event){
+            console.log('LALALALALALALALALALALALALALA',event.data)
+        })
+        
+        var toggle_led = function(){
+            var new_state = !$(this).data('state')
+
+            $(this)
+                .data('state', new_state)
+                .toggleClass('btn-success', new_state)
+                .toggleClass('btn-danger', !new_state)
+			ws.emit('toggleled',{leds:"0000",id:"02"})
+            console.log(this.value + ': ' + new_state)
+        }
+        $('.led-buttons input')
+            .data('state', false)
+            .on("click", toggle_led)
+        
+    </script>
 	</body>
 </html>
