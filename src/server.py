@@ -8,7 +8,7 @@ import aiocoap
 
 from SECRET import SECRET_KEY
 
-from flask_socketio import SocketIO, join_room, leave_room
+from flask_socketio import *
 
 app = flask.Flask(__name__,static_folder="../static",static_url_path="/static",template_folder="../templates")
 app.config['SECRET_KEY'] = SECRET_KEY
@@ -81,11 +81,11 @@ def parseCommand(id):
     
     print("yolo ",flask.g.get("ipidmap",None))
     # End tentative map
-    return "ID: %i" % (id)
+    return flask.render_template("index.html", name="index")
 
 @socketio.on('connect')
 def on_connect():
-    emit('newboard',{'data':'Connected','status':DEVICES[id].getledstatus()})
+    emit('my response', {'data': 'Connected'})
 
 @socketio.on('disconnect')
 def on_disco():
