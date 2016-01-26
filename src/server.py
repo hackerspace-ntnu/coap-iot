@@ -83,7 +83,7 @@ def parseCommand(id, command):
     # End tentative map
     return "ID: %i, command: %s" % (id, command)
 
-@socketio.on('join')
+@socketio.on('join',namespace="/<int:id>")
 def on_join(data):
     id = data['id']
     join_room(id)
