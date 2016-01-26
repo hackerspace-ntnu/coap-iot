@@ -64,10 +64,12 @@
         var host = document.location.host
         
         var kit_id = document.location.pathname.split('/')[1] 
+        
         var toggle_led = function(){
             var kid = this.id
             var str = [0,0,0,0]
             str[kid/1] = 1
+            console.log(kit_id)
 			ws.emit('toggleled',{leds:str,id:kit_id})
         }
         
