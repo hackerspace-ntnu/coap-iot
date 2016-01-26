@@ -71,28 +71,25 @@ for i in enumerate(range(1,20)):
 def index():
     return flask.render_template("index.html", name="index")
 
-@app.route("/<int:id>/<command>")
-def parseCommand(id, command):
+@app.route("/<int:id>")
+def parseCommand(id):
     # Start tentative nonlocked ip id map
     if flask.g.get("ipidmap",None) == None:
         flask.g.ipidmap = {flask.request.environ["REMOTE_ADDR"], id}
     else:
         flask.g.ipidmap[flask.request.environ["REMOTE_ADDR"]] = id
     
-    print(flask.g.get("ipidmap",None))
+    print("yolo ",flask.g.get("ipidmap",None))
     # End tentative map
-    return "ID: %i, command: %s" % (id, command)
+    return "ID: %i" % (id)
 
-@socketio.on('join',namespace="/<int:id>")
-def on_join(data):
-    id = data['id']
-    join_room(id)
-    send('newboard',{'data':DEVICES[id].getledstatus()},room=id)
+@socketio.on('connect')
+def on_connect():
+    emit('newboard',{'data':'Connected','status':DEVICES[id].getledstatus()})
 
-@socketio.on('leave')
-def on_leave(data):
-    id = data['id']
-    leave_room(id)
+@socketio.on('disconnect')
+def on_disco():
+    print("The birds flew south")
 
 @socketio.on('toggleled')
 def on_toggle(data):
