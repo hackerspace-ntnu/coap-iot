@@ -33,7 +33,7 @@ class Nordicnode():
             for i in range(4):
                 if int(red[i]) == 1:
                     self.led[i] = (self.led[i]+1)%2
-            emit('newboard',{'data':self.led})
+            emit('newboard',{'data':self.led,'id':self.name},broadcast=True)
             strdata = ""
             for element in self.led:
                 strdata += str(element)
@@ -119,7 +119,7 @@ def on_request_state(data):
     id = data['id']
     print('WHAT YEAR IS IT',id)
     print('Request received',id,DEVICES[str(id).zfill(2)].getledstatus(),DEVICES[str(id).zfill(2)].led)
-    emit('newboard',{'data':DEVICES[str(id).zfill(2)].getledstatus()})
+    emit('newboard',{'data':DEVICES[str(id).zfill(2)].getledstatus(),'id':id})
 
 class LedResource(resource.Resource):
     def __init__(self,kit):

@@ -98,7 +98,10 @@
             ws.emit('requeststate',{id:kit_id})
         })
         ws.on('newboard',function(event){
+            if(event.id === kit_id)
+            {
             set_button_states(event.data)
+            }
         })
         
 
