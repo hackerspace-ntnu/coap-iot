@@ -15,10 +15,12 @@ app = flask.Flask(__name__,static_folder="../static",static_url_path="/static",t
 app.config['SECRET_KEY'] = SECRET_KEY
 socketio = SocketIO(app)
 
+bluesea = aiocoap.Context.create_client_context();
+
 class Nordicnode():
-    def __init__(self, led=[0,0,0,0], active=False, address=None, lastactive=0, name=None):
+    def __init__(self, led=None, active=False, address=None, lastactive=0, name=None):
         self.lock = threading.Lock()
-        self.led = led
+        self.led = [0,0,0,0]
         self.active = active
         self.address = address
         self.lastactive = lastactive
@@ -26,15 +28,24 @@ class Nordicnode():
 
     def updateled(self, red):
         self.lock.acquire()
-        print("updateled called", red)
         try:
             logging.debug('Acquired a lock')
             for i in range(4):
                 if int(red[i]) == 1:
-                
                     self.led[i] = (self.led[i]+1)%2
-            print(self.led)
             emit('newboard',{'data':self.led})
+            strdata = ""
+            for element in self.led:
+                strdata += str(element)
+            print("Code",strdata)
+            if self.address == None:
+                return;
+            request = aiocoap.Message(code=aiocoap.PUT,payload=strdata.encode("ascii"))
+            request.set_request_uri("coap://"+self.address+"/led")
+            try:
+                bluesea.request(request);
+            except Exception as e:
+                print(e)
         finally:
             logging.debug('Released a lock')
             self.lock.release()
@@ -85,7 +96,7 @@ def parseCommand(id):
     
     print("yolo ",flask.g.get("ipidmap",None))
     # End tentative map
-    return flask.render_template("led.html", name="index")
+    return flask.render_template("led.html", name="led")
 
 @socketio.on('connect')
 def on_connect():
@@ -100,13 +111,14 @@ def on_toggle(data):
     print('HELLO')
     payload = data['leds']
     id = data['id']
+    print(id)
     DEVICES[str(id).zfill(2)].updateled(payload)
 
 @socketio.on('requeststate')
 def on_request_state(data):
     id = data['id']
     print('WHAT YEAR IS IT',id)
-    print('Request received',id,DEVICES[str(id).zfill(2)].getledstatus())
+    print('Request received',id,DEVICES[str(id).zfill(2)].getledstatus(),DEVICES[str(id).zfill(2)].led)
     emit('newboard',{'data':DEVICES[str(id).zfill(2)].getledstatus()})
 
 class LedResource(resource.Resource):
@@ -156,7 +168,7 @@ def main():
         root.add_resource((str(kit).zfill(2),'button'), LedResource(str(kit).zfill(2)))
         root.add_resource((str(kit).zfill(2),'i_am_alive'), LastSeenResource(str(kit).zfill(2)))
 
-    websrv = threading.Thread(target=(lambda: socketio.run(app=app, debug=False, port=80, use_reloader=False)), name="Flask-server")
+    websrv = threading.Thread(target=(lambda: socketio.run(app=app, debug=True, port=5000, use_reloader=False)), name="Flask-server")
     websrv.start()
     
     asyncio.async(aiocoap.Context.create_server_context(root))

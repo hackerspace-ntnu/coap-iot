@@ -43,16 +43,16 @@
     
             <div class="row">
                 <div class="col-xs-6" >
-					<input class="btn btn-default btn-lg btn-block btn-danger" type="button" value="LED1">
+					<input class="btn btn-default btn-lg btn-block " type="button" value="LED1" id=0>
 				</div>
 				<div class="col-xs-6">
-					<input class="btn btn-default btn-lg btn-block btn-danger" type="button" value="LED2">
+					<input class="btn btn-default btn-lg btn-block " type="button" value="LED2" id=1>
 				</div>
                 <div class="col-xs-6">
-					<input class="btn btn-default btn-lg btn-block btn-danger" type="button" value="LED3">
+					<input class="btn btn-default btn-lg btn-block " type="button" value="LED3" id=2>
 				</div >
 				<div class="col-xs-6">
-					<input class="btn btn-default btn-lg btn-block btn-danger" type="button"  value="LED4">
+					<input class="btn btn-default btn-lg btn-block " type="button"  value="LED4" id=3>
                   </div>
             
                 </div>
@@ -61,28 +61,47 @@
     <script>
         "use strict"
         
-        var ws = io("http://localhost:5000")
-        ws.on('connection',function(event){
-            console.log('LFLFLFLDJFSKFJKDFJKDJFKDJFKDJJFKDJFKDJFKDJFKDJFKDJKF',event.status)
-        })
-        ws.on('newboard',function(event){
-            console.log('LALALALALALALALALALALALALALA',event.data)
-        })
+        var host = document.location.host
+        
+        var kit_id = document.location.pathname.split('/')[1] 
         
         var toggle_led = function(){
-            var new_state = !$(this).data('state')
-
-            $(this)
-                .data('state', new_state)
-                .toggleClass('btn-success', new_state)
-                .toggleClass('btn-danger', !new_state)
-			ws.emit('toggleled',{leds:"0000",id:"02"})
-            console.log(this.value + ': ' + new_state)
+            var kid = this.id
+            var str = [0,0,0,0]
+            str[kid/1] = 1
+            console.log(kit_id)
+			ws.emit('toggleled',{leds:str,id:kit_id})
         }
-        $('.led-buttons input')
-            .data('state', false)
-            .on("click", toggle_led)
         
+        $('.led-buttons input')
+           .data('state', false)
+           .on("click", toggle_led)
+        
+        var buttons = $('.led-buttons input')
+        
+        var set_button_states = function(states){
+            buttons.each(function(index, button){
+                var stet = states[index]/1
+                if(stet)
+                {
+                $(button).toggleClass('btn-success',true)
+                $(button).toggleClass('btn-danger',false)
+                }else{
+                $(button).toggleClass('btn-success',false)
+                $(button).toggleClass('btn-danger',true)
+                }
+            })
+        }
+        
+        var ws = io("http://"+host)
+        ws.on('connection',function(event){
+            ws.emit('requeststate',{id:kit_id})
+        })
+        ws.on('newboard',function(event){
+            set_button_states(event.data)
+        })
+        
+
     </script>
 	</body>
 </html>
