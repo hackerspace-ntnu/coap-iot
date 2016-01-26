@@ -8,7 +8,7 @@ import aiocoap
 
 from SECRET import SECRET_KEY
 
-from flask_socketio import SocketIO, join_room
+from flask_socketio import SocketIO, join_room, leave_room
 
 app = flask.Flask(__name__,static_folder="../static",static_url_path="/static",template_folder="../templates")
 app.config['SECRET_KEY'] = SECRET_KEY
@@ -28,7 +28,7 @@ class Nordicnode():
         try:
             logging.debug('Acquired a lock')
             self.led = led
-            socketio.emit('newboard',{'data':led})
+            socketio.send('newboard',{'data':led},room=self.name)
         finally:
             logging.debug('Released a lock')
             self.lock.release()
@@ -39,6 +39,15 @@ class Nordicnode():
             self.active = active
         finally:
             self.lock.release()
+
+    def getledstatus(self):
+        self.lock.acquire()
+        out = None
+        try:
+            out = copy.deepcopy(self.led)
+        finally:
+            self.lock.release()
+            return out
 
     def updateaddress(self, address):
         self.lock.acquire()
@@ -78,6 +87,18 @@ def parseCommand(id, command):
 def on_join(data):
     id = data['id']
     join_room(id)
+    send('newboard',{'data':DEVICES[id].getledstatus()},room=id)
+
+@socketio.on('leave')
+def on_leave(data):
+    id = data['id']
+    leave_room(id)
+
+@socketio.on('toggleled')
+def on_toggle(data):
+    payload = data['leds']
+    id = data['id']
+    DEVICES[id].updateled(payload)
 
 class LedResource(resource.Resource):
     def __init__(self,kit):
