@@ -5,6 +5,7 @@ import threading
 import time
 import aiocoap.resource as resource
 import aiocoap
+import copy
 
 from SECRET import SECRET_KEY
 
@@ -15,7 +16,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 socketio = SocketIO(app)
 
 class Nordicnode():
-    def __init__(self, led="0,0,0,0", active=False, address=None, lastactive=0, name=None):
+    def __init__(self, led=[0,0,0,0], active=False, address=None, lastactive=0, name=None):
         self.lock = threading.Lock()
         self.led = led
         self.active = active
@@ -23,12 +24,17 @@ class Nordicnode():
         self.lastactive = lastactive
         self.name = name
 
-    def updateled(self, led):
+    def updateled(self, red):
         self.lock.acquire()
+        print("updateled called", red)
         try:
             logging.debug('Acquired a lock')
-            self.led = led
-            emit('newboard',{'data':led})
+            for i in range(4):
+                if int(red[i]) == 1:
+                
+                    self.led[i] = (self.led[i]+1)%2
+            print(self.led)
+            emit('newboard',{'data':self.led})
         finally:
             logging.debug('Released a lock')
             self.lock.release()
@@ -42,12 +48,10 @@ class Nordicnode():
 
     def getledstatus(self):
         self.lock.acquire()
-        out = None
         try:
-            out = copy.deepcopy(self.led)
+            return (copy.deepcopy(self.led))
         finally:
             self.lock.release()
-            return out
 
     def updateaddress(self, address):
         self.lock.acquire()
@@ -85,7 +89,7 @@ def parseCommand(id):
 
 @socketio.on('connect')
 def on_connect():
-    emit('connection', {'data': 'Connected', 'status':'0000'})
+    emit('connection', {'data': 'Connected'})
 
 @socketio.on('disconnect')
 def on_disco():
@@ -97,6 +101,13 @@ def on_toggle(data):
     payload = data['leds']
     id = data['id']
     DEVICES[str(id).zfill(2)].updateled(payload)
+
+@socketio.on('requeststate')
+def on_request_state(data):
+    id = data['id']
+    print('WHAT YEAR IS IT',id)
+    print('Request received',id,DEVICES[str(id).zfill(2)].getledstatus())
+    emit('newboard',{'data':DEVICES[str(id).zfill(2)].getledstatus()})
 
 class LedResource(resource.Resource):
     def __init__(self,kit):
