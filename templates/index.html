@@ -60,6 +60,15 @@
         </div>
     <script>
         "use strict"
+        
+        var ws = io("http://localhost:5000")
+        ws.on('connection',function(event){
+            console.log('LFLFLFLDJFSKFJKDFJKDJFKDJFKDJJFKDJFKDJFKDJFKDJFKDJKF',event.status)
+        })
+        ws.on('newboard',function(event){
+            console.log('LALALALALALALALALALALALALALA',event.data)
+        })
+        
         var toggle_led = function(){
             var new_state = !$(this).data('state')
 
@@ -67,12 +76,13 @@
                 .data('state', new_state)
                 .toggleClass('btn-success', new_state)
                 .toggleClass('btn-danger', !new_state)
-
+			ws.emit('toggleled',{leds:"0000",id:"02"})
             console.log(this.value + ': ' + new_state)
         }
         $('.led-buttons input')
             .data('state', false)
             .on("click", toggle_led)
+        
     </script>
 	</body>
 </html>

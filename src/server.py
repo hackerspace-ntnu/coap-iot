@@ -28,7 +28,7 @@ class Nordicnode():
         try:
             logging.debug('Acquired a lock')
             self.led = led
-            socketio.send('newboard',{'data':led},room=self.name)
+            emit('newboard',{'data':led})
         finally:
             logging.debug('Released a lock')
             self.lock.release()
@@ -64,7 +64,7 @@ class Nordicnode():
             self.lock.release()
 
 DEVICES = {}
-for i in enumerate(range(1,20)):
+for i in range(1,21):
     DEVICES[str(i).zfill(2)] = (Nordicnode(name=str(i).zfill(2)))
 
 @app.route("/")
@@ -85,7 +85,7 @@ def parseCommand(id):
 
 @socketio.on('connect')
 def on_connect():
-    emit('my response', {'data': 'Connected'})
+    emit('connection', {'data': 'Connected', 'status':'0000'})
 
 @socketio.on('disconnect')
 def on_disco():
@@ -93,9 +93,10 @@ def on_disco():
 
 @socketio.on('toggleled')
 def on_toggle(data):
+    print('HELLO')
     payload = data['leds']
     id = data['id']
-    DEVICES[id].updateled(payload)
+    DEVICES[str(id).zfill(2)].updateled(payload)
 
 class LedResource(resource.Resource):
     def __init__(self,kit):
