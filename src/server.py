@@ -6,8 +6,10 @@ import time
 import aiocoap.resource as resource
 import aiocoap
 
-app = flask.Flask(__name__,static_folder="../static",static_url_path="/static",template_folder="../templates")
-@app.route("/")
+from SECRET import SECRET_KEY
+
+from flask_socketio import SocketIO, join_room
+
 
 class Nordicnode():
     def __init__(self, led="0,0,0,0", active=False, address=None, lastactive=0, name=None):
@@ -52,19 +54,34 @@ DEVICES = {}
 for i in enumerate(range(1,20)):
     DEVICES[str(i).zfill(2)] = (Nordicnode(name=str(i).zfill(2)))
 
-def hello():
-    return flask.render_template("index.html", name="index")
+app = flask.Flask(__name__,static_folder="../static",static_url_path="/static",template_folder="../templates")
+app.config['SECRET_KEY'] = SECRET_KEY
+socketio = SocketIO(app)
 
+@app.route("/")
 def index():
     return flask.render_template("index.html", name="index")
 
 @app.route("/<int:id>/<command>")
 def parseCommand(id, command):
+    # Start tentative nonlocked ip id map
+    if flask.g.get("ipidmap",None) == None:
+        flask.g.ipidmap = {flask.request.environ["REMOTE_ADDR"], id}
+    else:
+        flask.g.ipidmap[flask.request.environ["REMOTE_ADDR"]] = id
+    
+    print(flask.g.get("ipidmap",None))
+    # End tentative map
     return "ID: %i, command: %s" % (id, command)
+
+@socketio.on('join')
+def on_join(data):
+    id = data['id']
+    join_room(id)
 
 class LedResource(resource.Resource):
     def __init__(self,kit):
-        super(BlockResource, self).__init__()
+        super(LedResource, self).__init__()
         # self.content = ("test-content: yes please").encode("ascii")
         self.kit = kit
     @asyncio.coroutine
@@ -83,7 +100,7 @@ class LedResource(resource.Resource):
 
 class LastSeenResource(resource.Resource):
     def __init__(self,kit):
-        super(BlockResource, self).__init__()
+        super(LastSeenResource, self).__init__()
         # self.content = ("test-content: yes please").encode("ascii")
         self.kit = kit
     @asyncio.coroutine
@@ -107,9 +124,9 @@ def main():
     root = resource.Site()
     for kit in enumerate(range(1,21)):
         root.add_resource((str(kit).zfill(2),'button'), LedResource(str(kit).zfill(2)))
-        root.add_resource((str(kit).zfill(2),'i_am_alive'), BlockResource(str(kit).zfill(2)))
+        root.add_resource((str(kit).zfill(2),'i_am_alive'), LastSeenResource(str(kit).zfill(2)))
 
-    websrv = threading.Thread(target=(lambda: app.run(debug=True, port=25565, use_reloader=False)), name="Flask-server")
+    websrv = threading.Thread(target=(lambda: socketio.run(app=app, debug=True, port=5000, use_reloader=False)), name="Flask-server")
     websrv.start()
     
     asyncio.async(aiocoap.Context.create_server_context(root))
