@@ -2,12 +2,13 @@ import aiocoap.resource as resource
 import aiocoap
 import asyncio
 import http.client
+from SERVCONFIG import SERVER_HOST,SERVER_PORT
 
 COMMAND_ALIVE = 'alive'
 COMMAND_BUTTON = 'button'
 
-GLOBAL_HOST = 'localhost'
-GLOBAL_PORT = '5000'
+GLOBAL_HOST = SERVER_HOST
+GLOBAL_PORT = SERVER_PORT
 
 
 def send_http_request(host, pport, kit, cmd, payload):

@@ -3,9 +3,11 @@ import time
 import asyncio
 import threading
 import copy
+import sys
 
 from nordicnode import Nordicnode
 from SECRET import SECRET_KEY
+from SERVCONFIG import SERVER_HOST,SERVER_PORT
 
 from flask_socketio import *
 
@@ -14,6 +16,9 @@ app.config['SECRET_KEY'] = SECRET_KEY
 socketio = SocketIO(app)
 
 MAX_DEVICES = 20
+
+GLOBAL_HOST = SERVER_HOST
+GLOBAL_PORT = SERVER_PORT
 
 DEVICES = {}
 for i in range(1,MAX_DEVICES+1):
@@ -38,7 +43,7 @@ def parseCommand(id):
     return flask.render_template("led.html", name="led")
 
 
-@app.route("/<int:id>/<string:cmd>/handle_msg/<string:payload>")
+@app.route("/<int:id>/<string:cmd>/handle_msg/<string:payload>", methods=['PUT', 'GET'])
 def parseSignal(id, cmd, payload):
     """
     Håndter meldinger fra CoAP server om ledchange
@@ -50,10 +55,11 @@ def parseSignal(id, cmd, payload):
 
     kit = str(id).zfill(2)
 
-    if cmd == 'alive':
+    if cmd == 'alive' and flask.request.method == 'PUT':
         print('Updating address and keepalive')
+        addr = flask.request.form['d']
         DEVICES[kit].updatelastactive(time.time())
-        DEVICES[kit].updateaddress('localhost')
+        DEVICES[kit].updateaddress(addr)
     elif cmd == 'button':
         print('Button toggle from kit:', payload)
         if type(payload) is str and len(payload) == 4 and DEVICES[kit].lastactive-time.time() < 25:
@@ -91,11 +97,11 @@ def on_request_state(data):
     id = data['id']
     print('WHAT YEAR IS IT',id)
     print('Request received',id,DEVICES[str(id).zfill(2)].getledstatus())
-    emit('newboard',{'data':DEVICES[str(id).zfill(2)].getledstatus(),'id':id})
+    emit('newboard', {'data':DEVICES[str(id).zfill(2)].getledstatus(),'id':id})
 
 
 def main():
-    socketio.run(app=app, debug=True, port=5000, use_reloader=False)
+    socketio.run(app=app, host=GLOBAL_HOST, debug=True, port=GLOBAL_PORT, use_reloader=False)
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("coap-server").setLevel(logging.DEBUG)
