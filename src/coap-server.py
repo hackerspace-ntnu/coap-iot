@@ -1,10 +1,21 @@
 import aiocoap.resource as resource
 import aiocoap
-import time
 import asyncio
+import http.client
 
-addresses = {}
-aliveness = {}
+COMMAND_ALIVE = 'alive'
+COMMAND_BUTTON = 'button'
+
+GLOBAL_HOST = 'localhost'
+GLOBAL_PORT = '5000'
+
+
+def send_http_request(host, pport, kit, cmd, payload):
+    print('Building request:', host, pport, kit, cmd, payload)
+    conn = http.client.HTTPConnection(host,port=pport)
+    conn.request('GET', '/%s/%s/handle_msg/%s' % (kit, cmd, payload))
+    conn.getresponse()
+    conn.close()
 
 
 class LedResource(resource.Resource):
@@ -12,13 +23,10 @@ class LedResource(resource.Resource):
         super(LedResource, self).__init__()
         self.kit = kit
 
-    def render_put(self,req):
+    def render_put(self, req):
         print("Got payload: %s" % req.payload)
-        #DEVICES[self.kit].updateled(req.payload.decode('ascii'))
-        """
-        Echo back messages
-        """
-        return aiocoap.Message(code=aiocoap.CHANGED,payload=req.payload)
+        send_http_request(GLOBAL_HOST, GLOBAL_PORT, self.kit, COMMAND_BUTTON, req.payload.decode('ascii'))
+        return aiocoap.Message(code=aiocoap.CHANGED,payload='')
 
 
 class LastSeenResource(resource.Resource):
@@ -28,12 +36,11 @@ class LastSeenResource(resource.Resource):
 
     def render_put(self,req):
         print("Keepalive: %s" % req.payload)
-        aliveness[self.kit] = time.time()
-        addresses[self.kit] = req.remote[0]
+        send_http_request(GLOBAL_HOST, GLOBAL_PORT, self.kit, COMMAND_ALIVE, '')
         """
         http put to flask server <int>/<str>/ledpushed
         """
-        return aiocoap.Message(code=aiocoap.CHANGED,payload=req.payload)
+        return aiocoap.Message(code=aiocoap.CHANGED,payload='')
 
 
 def main():
@@ -44,3 +51,6 @@ def main():
 
     asyncio.async(aiocoap.Context.create_server_context(root))
     asyncio.get_event_loop().run_forever()
+
+if __name__ == '__main__':
+    main()

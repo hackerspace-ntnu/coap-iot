@@ -1,4 +1,5 @@
 import logging
+import time
 import asyncio
 import threading
 import copy
@@ -12,9 +13,10 @@ app = flask.Flask(__name__,static_folder="../static",static_url_path="/static",t
 app.config['SECRET_KEY'] = SECRET_KEY
 socketio = SocketIO(app)
 
+MAX_DEVICES = 20
 
 DEVICES = {}
-for i in range(1,21):
+for i in range(1,MAX_DEVICES+1):
     DEVICES[str(i).zfill(2)] = (Nordicnode(name=str(i).zfill(2)))
 
 
@@ -35,14 +37,32 @@ def parseCommand(id):
     # End tentative map
     return flask.render_template("led.html", name="led")
 
-@app.route("/<int:id>/<str:cmd>/handle_msg")
-def parseSignal(id):
+
+@app.route("/<int:id>/<string:cmd>/handle_msg/<string:payload>")
+def parseSignal(id, cmd, payload):
     """
     Håndter meldinger fra CoAP server om ledchange
     :param id:
     :return:
     """
-    return
+    if id > MAX_DEVICES or id < 1:
+        return 'Nope'
+
+    kit = str(id).zfill(2)
+
+    if cmd == 'alive':
+        DEVICES[kit].updatelastactive(time.time())
+    elif cmd == 'button':
+        if type(payload) is str and len(payload) == 4 and DEVICES[kit].lastactive-time.time() < 25:
+            DEVICES[kit].updateled(socketio, payload)
+        else:
+            return 'Nope'
+    else:
+        return 'Nope'
+
+    print('CoAP signal:', kit, cmd, payload)
+    return 'Good job!'
+
 
 @socketio.on('connect')
 def on_connect():

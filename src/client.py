@@ -16,9 +16,9 @@ def send_msg(host, path, payload):
     else:
         print("lol", response.code, response.payload)
 
-asyncio.get_event_loop().run_until_complete(send_msg('localhost', '03/i_am_alive', '0'))
-asyncio.get_event_loop().run_until_complete(send_msg('localhost', '03/button', '1000'))
-asyncio.get_event_loop().run_until_complete(send_msg('localhost', '03/button', '0001'))
+asyncio.get_event_loop().run_until_complete(send_msg('localhost', '01/i_am_alive', '0'))
+asyncio.get_event_loop().run_until_complete(send_msg('localhost', '01/button', '1000'))
+asyncio.get_event_loop().run_until_complete(send_msg('localhost', '01/button', '0001'))
 
 #root = resource.Site()
 #root.add_resource(('led',), BlockResource())

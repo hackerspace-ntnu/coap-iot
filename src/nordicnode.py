@@ -3,6 +3,7 @@ import copy
 import logging
 import asyncio
 from flask_socketio import *
+import aiocoap
 
 
 @asyncio.coroutine
@@ -39,7 +40,6 @@ class Nordicnode():
             print('Emitting socket broadcast')
             socketio.emit('newboard',{'data':self.led,'id':self.name},broadcast=True)
             print('Broadcast complete')
-
             """
             Send CoAP meldinger til kit herifra
             """
