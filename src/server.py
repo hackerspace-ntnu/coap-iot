@@ -51,8 +51,11 @@ def parseSignal(id, cmd, payload):
     kit = str(id).zfill(2)
 
     if cmd == 'alive':
+        print('Updating address and keepalive')
         DEVICES[kit].updatelastactive(time.time())
+        DEVICES[kit].updateaddress('localhost')
     elif cmd == 'button':
+        print('Button toggle from kit:', payload)
         if type(payload) is str and len(payload) == 4 and DEVICES[kit].lastactive-time.time() < 25:
             DEVICES[kit].updateled(socketio, payload)
         else:

@@ -5,13 +5,15 @@ import asyncio
 from flask_socketio import *
 import aiocoap
 
+evloop = asyncio.get_event_loop()
+
 
 @asyncio.coroutine
 def send_coap_message(host,path,payload):
-    print(host,path,payload)
     bluesea = yield from aiocoap.Context.create_client_context()
+    print(host,path,payload)
     request = aiocoap.Message(code=aiocoap.PUT, payload=payload.encode("ascii"))
-    request.set_request_uri("coap://"+'localhost'+"/"+path)
+    request.set_request_uri("coap://"+host+"/"+path)
     try:
         response = yield from bluesea.request(request).response
     except Exception as e:
@@ -43,6 +45,15 @@ class Nordicnode():
             """
             Send CoAP meldinger til kit herifra
             """
+            strdata = ''
+            for i in range(len(self.led)):
+                strdata += str(self.led[i])
+            if self.address is None:
+                print('Address is non-existent, what?')
+                return
+            print('Dispatching CoAP broadcast')
+            evloop.run_until_complete(send_coap_message(self.address, 'led', strdata))
+            print('CoAP message sent')
         finally:
             logging.debug('Released a lock')
             self.lock.release()
