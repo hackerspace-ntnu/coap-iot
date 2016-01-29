@@ -1,9 +1,6 @@
 import logging
 import time
-import asyncio
-import threading
 import copy
-import sys
 
 from nordicnode import Nordicnode
 from SECRET import SECRET_KEY

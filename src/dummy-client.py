@@ -12,5 +12,5 @@ class BlockResource(resource.Resource):
 
 root = resource.Site()
 root.add_resource(('led',), BlockResource())
-asyncio.async(Context.create_server_context(root, bind=('::', 5801)))
+asyncio.async(Context.create_server_context(root))
 asyncio.get_event_loop().run_forever()

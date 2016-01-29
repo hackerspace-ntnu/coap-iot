@@ -14,12 +14,15 @@ def send_coap_message(host,path,payload):
     print('CoAP message:',host,path,payload)
     request = aiocoap.Message(code=aiocoap.PUT, payload=payload.encode("ascii"))
     request.set_request_uri("coap://"+str(host)+"/"+str(path))
+    bluesea.request(request)
+    """
     try:
         response = yield from bluesea.request(request).response
     except Exception as e:
         print(e)
     else:
         print("Message response:",response.code,response.payload)
+    """
 
 
 class Nordicnode():
