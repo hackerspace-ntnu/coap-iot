@@ -14,8 +14,8 @@ GLOBAL_PORT = SERVER_PORT
 def send_http_request(host, pport, kit, cmd, payload):
     print('Building request:', host, pport, kit, cmd, payload)
     conn = http.client.HTTPConnection(host,port=pport)
-    conn.request('GET', '/%s/%s/handle_msg/%s' % (kit, cmd, payload))
-    #conn.getresponse()
+    conn.request('PUT', '/%s/%s/handle_msg/%s' % (kit, cmd, 'll'), payload)
+    conn.getresponse()
     conn.close()
     print('Request finished')
 
@@ -38,7 +38,7 @@ class LastSeenResource(resource.Resource):
 
     def render_put(self,req):
         print("Keepalive: %s" % req.payload)
-        send_http_request(GLOBAL_HOST, GLOBAL_PORT, self.kit, COMMAND_ALIVE, 'dldld')
+        send_http_request(GLOBAL_HOST, GLOBAL_PORT, self.kit, COMMAND_ALIVE, req.remote[0])
         """
         http put to flask server <int>/<str>/ledpushed
         """

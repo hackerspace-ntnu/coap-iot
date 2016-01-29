@@ -11,9 +11,9 @@ evloop = asyncio.get_event_loop()
 @asyncio.coroutine
 def send_coap_message(host,path,payload):
     bluesea = yield from aiocoap.Context.create_client_context()
-    print(host,path,payload)
+    print('CoAP message:',host,path,payload)
     request = aiocoap.Message(code=aiocoap.PUT, payload=payload.encode("ascii"))
-    request.set_request_uri("coap://"+host+"/"+path)
+    request.set_request_uri("coap://"+str(host)+"/"+str(path))
     try:
         response = yield from bluesea.request(request).response
     except Exception as e:

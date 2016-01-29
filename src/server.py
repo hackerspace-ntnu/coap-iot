@@ -43,8 +43,8 @@ def parseCommand(id):
     return flask.render_template("led.html", name="led")
 
 
-@app.route("/<int:id>/<string:cmd>/handle_msg/<string:payload>", methods=['PUT', 'GET'])
-def parseSignal(id, cmd, payload):
+@app.route("/<int:id>/<string:cmd>/handle_msg/<string:payloadd>", methods=['PUT', 'GET'])
+def parseSignal(id, cmd, payloadd):
     """
     Håndter meldinger fra CoAP server om ledchange
     :param id:
@@ -54,12 +54,12 @@ def parseSignal(id, cmd, payload):
         return 'Nope'
 
     kit = str(id).zfill(2)
+    payload = flask.request.data
 
     if cmd == 'alive' and flask.request.method == 'PUT':
-        print('Updating address and keepalive')
-        addr = flask.request.form['d']
+        print('Updating address and keepalive', payload)
         DEVICES[kit].updatelastactive(time.time())
-        DEVICES[kit].updateaddress(addr)
+        DEVICES[kit].updateaddress(payload)
     elif cmd == 'button':
         print('Button toggle from kit:', payload)
         if type(payload) is str and len(payload) == 4 and DEVICES[kit].lastactive-time.time() < 25:
