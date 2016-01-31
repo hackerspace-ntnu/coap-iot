@@ -13,7 +13,8 @@ def send_coap_message(host,path,payload):
     bluesea = yield from aiocoap.Context.create_client_context()
     print('CoAP message:',host,path,payload)
     request = aiocoap.Message(code=aiocoap.PUT, payload=payload.encode("ascii"))
-    request.set_request_uri("coap://"+str(host)+"/"+str(path))
+    #request.set_request_uri("coap://"+str(host)+"/"+str(path)) # send state as payload
+    request.set_request_uri("coap://"+str(host)+"/"+str(path)+"=\""+str(payload)+"\"") # Send state in uri
     bluesea.request(request)
     """
     try:
@@ -55,7 +56,7 @@ class Nordicnode():
                 print('Address is non-existent, what?')
                 return
             print('Dispatching CoAP broadcast')
-            evloop.run_until_complete(send_coap_message(self.address, 'led', strdata))
+            evloop.run_until_complete(send_coap_message(self.address,'led',strdata))
             print('CoAP message sent')
         finally:
             logging.debug('Released a lock')
