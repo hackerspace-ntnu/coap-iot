@@ -4,6 +4,7 @@ import logging
 import asyncio
 from flask_socketio import *
 import aiocoap
+from os import fork
 
 evloop = asyncio.get_event_loop()
 
@@ -13,9 +14,19 @@ def send_coap_message(host,path,payload):
     bluesea = yield from aiocoap.Context.create_client_context()
     print('CoAP message:',host,path,payload)
     request = aiocoap.Message(code=aiocoap.PUT, payload=payload.encode("ascii"))
-    #request.set_request_uri("coap://"+str(host)+"/"+str(path)) # send state as payload
-    request.set_request_uri("coap://"+str(host)+"/"+str(path)+"=\""+str(payload)+"\"") # Send state in uri
+    print('Request built')
+    uri = "coap://"+str(host)+"/"+str(path)
+    request.opt.uri_path = str(path)
+    request.opt.uri_host = str(host)
+    request.opt.uri_port = 5683
+    #try:
+        #request.set_request_uri(uri.encode('unicode')) # send state as payload
+    #except Exception as e:
+    #    print(e)
+    #request.set_request_uri("coap://"+str(host)+"/"+str(path)+"=\""+str(payload)+"\"") # Send state in uri
+    print('URI set')
     bluesea.request(request)
+    print('CoAP request sent')
     """
     try:
         response = yield from bluesea.request(request).response
@@ -54,11 +65,12 @@ class Nordicnode():
                 strdata += str(self.led[i])
             if self.address is None:
                 print('Address is non-existent, what?')
-                return
-            print('Dispatching CoAP broadcast')
+                return 
             evloop.run_until_complete(send_coap_message(self.address,'led',strdata))
+            print('Dispatching CoAP broadcast')
             print('CoAP message sent')
         finally:
+            print('Failed?')
             logging.debug('Released a lock')
             self.lock.release()
 
@@ -80,7 +92,7 @@ class Nordicnode():
         self.lock.acquire()
         try:
             print('Refreshing address: %s' % address)
-            self.address = address
+            self.address = str(address)
         finally:
             self.lock.release()
 

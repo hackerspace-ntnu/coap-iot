@@ -51,7 +51,9 @@ def parseSignal(id, cmd, payloadd):
         return 'Nope'
 
     kit = str(id).zfill(2)
-    payload = flask.request.data
+    payload = str(flask.request.data.decode('ascii'))
+    
+    print('Payload type',type(payload))
 
     if cmd == 'alive' and flask.request.method == 'PUT':
         print('Updating address and keepalive', payload)
@@ -59,9 +61,10 @@ def parseSignal(id, cmd, payloadd):
         DEVICES[kit].updateaddress(payload)
     elif cmd == 'button':
         print('Button toggle from kit:', payload)
-        if type(payload) is str and len(payload) == 4 and DEVICES[kit].lastactive-time.time() < 25:
+        if len(payload) == 4 and DEVICES[kit].lastactive-time.time() < 25:
             DEVICES[kit].updateled(socketio, payload)
         else:
+            print('Failed to toggle buttons')
             return 'Nope'
     else:
         return 'Nope'
