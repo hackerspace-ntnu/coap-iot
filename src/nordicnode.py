@@ -15,14 +15,14 @@ def send_coap_message(host,path,payload):
     print('CoAP message:',host,path,payload)
     request = aiocoap.Message(code=aiocoap.PUT, payload=payload.encode("ascii"))
     print('Request built')
-    uri = "coap://"+str(host)+"/"+str(path)
+    uri = "coap://["+str(host)+"]/"+str(path)
     request.opt.uri_path = str(path)
     request.opt.uri_host = str(host)
     request.opt.uri_port = 5683
-    #try:
-        #request.set_request_uri(uri.encode('unicode')) # send state as payload
-    #except Exception as e:
-    #    print(e)
+    try:
+        request.set_request_uri(uri) # send state as payload
+    except Exception as e:
+        print(e)
     #request.set_request_uri("coap://"+str(host)+"/"+str(path)+"=\""+str(payload)+"\"") # Send state in uri
     print('URI set')
     bluesea.request(request)
